@@ -1,0 +1,202 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+    
+    function isValidUserType(type) {
+      return type in ['particulier', 'professionnel'];
+    }
+    
+    function isValidProfessionalType(type) {
+      return type in ['agence', 'demarcheur', 'promoteur'];
+    }
+    
+    function isValidListingStatus(status) {
+      return status in ['active', 'inactive', 'sold', 'rented', 'draft'];
+    }
+    
+    function isValidPropertyType(type) {
+      return type in ['appartement', 'maison', 'villa', 'terrain', 'bureau', 'commerce', 'entrepot'];
+    }
+    
+    function isValidTransactionType(type) {
+      return type in ['vente', 'location'];
+    }
+
+    // Users collection
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && 
+                       isOwner(userId) &&
+                       isValidUserType(resource.data.type) &&
+                       (resource.data.type != 'professionnel' || 
+                        isValidProfessionalType(resource.data.professionalType));
+      allow update: if isAuthenticated() && 
+                       isOwner(userId) &&
+                       (resource.data.type == request.resource.data.type) &&
+                       (resource.data.type != 'professionnel' || 
+                        isValidProfessionalType(request.resource.data.professionalType));
+      allow delete: if isAuthenticated() && isOwner(userId);
+      
+      // User preferences subcollection
+      match /preferences/{document=**} {
+        allow read, write: if isAuthenticated() && isOwner(userId);
+      }
+      
+      // User subscriptions subcollection
+      match /subscriptions/{document=**} {
+        allow read, write: if isAuthenticated() && isOwner(userId);
+      }
+    }
+
+    // Listings collection (annonces)
+    match /listings/{listingId} {
+      allow read: if isAuthenticated() && 
+                     resource.data.status == 'active';
+      allow read: if isAuthenticated() && 
+                     isOwner(resource.data.ownerId);
+      allow create: if isAuthenticated() && 
+                       isOwner(resource.data.ownerId) &&
+                       isValidListingStatus(resource.data.status) &&
+                       isValidPropertyType(resource.data.propertyType) &&
+                       isValidTransactionType(resource.data.transactionType) &&
+                       resource.data.price is number &&
+                       resource.data.price > 0 &&
+                       resource.data.location.latitude is number &&
+                       resource.data.location.longitude is number &&
+                       resource.data.images is list;
+      allow update: if isAuthenticated() && 
+                       isOwner(resource.data.ownerId) &&
+                       isValidListingStatus(request.resource.data.status) &&
+                       request.resource.data.ownerId == resource.data.ownerId;
+      allow delete: if isAuthenticated() && 
+                       isOwner(resource.data.ownerId);
+      
+      // Listing analytics subcollection
+      match /analytics/{document=**} {
+        allow read: if isAuthenticated() && isOwner(resource.data.ownerId);
+        allow write: if false; // Only cloud functions can write analytics
+      }
+    }
+
+    // Requests collection (demandes particuliers)
+    match /requests/{requestId} {
+      allow read: if isAuthenticated() && 
+                     isOwner(resource.data.userId);
+      allow create: if isAuthenticated() && 
+                       isOwner(resource.data.userId) &&
+                       resource.data.budgetMin is number &&
+                       resource.data.budgetMax is number &&
+                       resource.data.budgetMin <= resource.data.budgetMax &&
+                       isValidPropertyType(resource.data.propertyType) &&
+                       isValidTransactionType(resource.data.transactionType) &&
+                       resource.data.location.latitude is number &&
+                       resource.data.location.longitude is number;
+      allow update: if isAuthenticated() && 
+                       isOwner(resource.data.userId) &&
+                       request.resource.data.userId == resource.data.userId;
+      allow delete: if isAuthenticated() && 
+                       isOwner(resource.data.userId);
+      
+      // Request matches subcollection
+      match /matches/{document=**} {
+        allow read: if isAuthenticated() && isOwner(resource.data.userId);
+        allow write: if false; // Only cloud functions can write matches
+      }
+    }
+
+    // Conversations collection
+    match /conversations/{conversationId} {
+      allow read: if isAuthenticated() && 
+                     request.auth.uid in resource.data.participants;
+      allow create: if isAuthenticated() && 
+                       request.auth.uid in resource.data.participants &&
+                       resource.data.participants.size() == 2;
+      allow update: if isAuthenticated() && 
+                       request.auth.uid in resource.data.participants &&
+                       request.resource.data.participants == resource.data.participants;
+      
+      // Messages subcollection
+      match /messages/{messageId} {
+        allow read: if isAuthenticated() && 
+                       request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants;
+        allow create: if isAuthenticated() && 
+                         isOwner(resource.data.senderId) &&
+                         request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants;
+        allow update: if isAuthenticated() && 
+                         isOwner(resource.data.senderId);
+      }
+    }
+
+    // Favorites collection
+    match /favorites/{favoriteId} {
+      allow read, write: if isAuthenticated() && 
+                            isOwner(resource.data.userId);
+    }
+
+    // Reviews collection
+    match /reviews/{reviewId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && 
+                       isOwner(resource.data.reviewerId) &&
+                       resource.data.rating is number &&
+                       resource.data.rating >= 1 &&
+                       resource.data.rating <= 5;
+      allow update: if isAuthenticated() && 
+                       isOwner(resource.data.reviewerId);
+      allow delete: if isAuthenticated() && 
+                       isOwner(resource.data.reviewerId);
+    }
+
+    // Reports collection (signalements)
+    match /reports/{reportId} {
+      allow read: if false; // Only admins can read reports
+      allow create: if isAuthenticated() && 
+                       isOwner(resource.data.reporterId) &&
+                       resource.data.reason is string &&
+                       resource.data.targetType in ['listing', 'user', 'message'];
+      allow update, delete: if false; // Only admins can modify reports
+    }
+
+    // Notifications collection
+    match /notifications/{notificationId} {
+      allow read: if isAuthenticated() && 
+                     isOwner(resource.data.userId);
+      allow update: if isAuthenticated() && 
+                       isOwner(resource.data.userId) &&
+                       request.resource.data.userId == resource.data.userId;
+      allow create, delete: if false; // Only cloud functions can create/delete notifications
+    }
+
+    // Admin collections (restricted)
+    match /admin/{document=**} {
+      allow read, write: if false; // Only admin users with custom claims
+    }
+
+    // Analytics collections
+    match /analytics/{document=**} {
+      allow read, write: if false; // Only cloud functions
+    }
+
+    // Subscription plans
+    match /subscriptionPlans/{planId} {
+      allow read: if isAuthenticated();
+      allow write: if false; // Only admins
+    }
+
+    // Payment transactions
+    match /transactions/{transactionId} {
+      allow read: if isAuthenticated() && 
+                     isOwner(resource.data.userId);
+      allow write: if false; // Only cloud functions
+    }
+  }
+}

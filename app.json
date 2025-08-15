@@ -1,29 +1,95 @@
 {
   "expo": {
     "name": "LogeVite",
-    "slug": "LogeVite",
+    "slug": "logevite",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#10b981"
     },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.manscorp.logevite",
+      "buildNumber": "1.0.0",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Cette application utilise la localisation pour vous aider à trouver des biens immobiliers près de vous.",
+        "NSCameraUsageDescription": "Cette application utilise l'appareil photo pour prendre des photos de vos annonces immobilières.",
+        "NSPhotoLibraryUsageDescription": "Cette application accède à votre galerie photo pour sélectionner des images pour vos annonces.",
+        "NSMicrophoneUsageDescription": "Cette application utilise le microphone pour les appels vocaux dans la messagerie."
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#10b981"
       },
-      "edgeToEdgeEnabled": true
+      "package": "com.manscorp.logevite",
+      "versionCode": 1,
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "RECORD_AUDIO",
+        "RECEIVE_BOOT_COMPLETED",
+        "VIBRATE",
+        "WAKE_LOCK"
+      ],
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
-      "favicon": "./assets/favicon.png"
-    }
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#10b981",
+          "sounds": [
+            "./assets/sounds/notification.wav"
+          ]
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Cette application utilise la localisation pour vous aider à trouver des biens immobiliers près de vous."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Cette application accède à votre galerie photo pour sélectionner des images pour vos annonces.",
+          "cameraPermission": "Cette application utilise l'appareil photo pour prendre des photos de vos annonces immobilières."
+        }
+      ],
+      [
+        "@react-native-firebase/app",
+        {
+          "android": {
+            "googleServicesFile": "./google-services.json"
+          },
+          "ios": {
+            "googleServicesFile": "./GoogleService-Info.plist"
+          }
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "your-project-id-here"
+      }
+    },
+    "owner": "manscorp"
   }
 }

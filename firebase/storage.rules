@@ -1,0 +1,117 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+    
+    function isValidImageType() {
+      return request.resource.contentType.matches('image/.*');
+    }
+    
+    function isValidImageSize() {
+      return request.resource.size < 10 * 1024 * 1024; // 10MB max
+    }
+    
+    function isValidDocumentType() {
+      return request.resource.contentType in [
+        'application/pdf',
+        'image/jpeg',
+        'image/png',
+        'image/webp'
+      ];
+    }
+
+    // Profile pictures
+    match /users/{userId}/profile/{fileName} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && 
+                      isOwner(userId) &&
+                      isValidImageType() &&
+                      isValidImageSize();
+      allow delete: if isAuthenticated() && isOwner(userId);
+    }
+
+    // Listing images
+    match /listings/{listingId}/{fileName} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && 
+                      isValidImageType() &&
+                      isValidImageSize() &&
+                      // Verify the user owns the listing
+                      exists(/databases/(default)/documents/listings/$(listingId)) &&
+                      get(/databases/(default)/documents/listings/$(listingId)).data.ownerId == request.auth.uid;
+      allow delete: if isAuthenticated() &&
+                       exists(/databases/(default)/documents/listings/$(listingId)) &&
+                       get(/databases/(default)/documents/listings/$(listingId)).data.ownerId == request.auth.uid;
+    }
+
+    // Chat message attachments
+    match /conversations/{conversationId}/messages/{messageId}/{fileName} {
+      allow read: if isAuthenticated() &&
+                     // Verify user is participant in conversation
+                     exists(/databases/(default)/documents/conversations/$(conversationId)) &&
+                     request.auth.uid in get(/databases/(default)/documents/conversations/$(conversationId)).data.participants;
+      allow write: if isAuthenticated() &&
+                      (isValidImageType() || isValidDocumentType()) &&
+                      isValidImageSize() &&
+                      // Verify user is participant in conversation
+                      exists(/databases/(default)/documents/conversations/$(conversationId)) &&
+                      request.auth.uid in get(/databases/(default)/documents/conversations/$(conversationId)).data.participants;
+      allow delete: if isAuthenticated() &&
+                       exists(/databases/(default)/documents/conversations/$(conversationId)/messages/$(messageId)) &&
+                       get(/databases/(default)/documents/conversations/$(conversationId)/messages/$(messageId)).data.senderId == request.auth.uid;
+    }
+
+    // Professional documents (KYC)
+    match /users/{userId}/documents/{fileName} {
+      allow read: if isAuthenticated() && isOwner(userId);
+      allow write: if isAuthenticated() && 
+                      isOwner(userId) &&
+                      isValidDocumentType() &&
+                      request.resource.size < 20 * 1024 * 1024; // 20MB for documents
+      allow delete: if isAuthenticated() && isOwner(userId);
+    }
+
+    // Company logos for professionals
+    match /users/{userId}/company/{fileName} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && 
+                      isOwner(userId) &&
+                      isValidImageType() &&
+                      isValidImageSize();
+      allow delete: if isAuthenticated() && isOwner(userId);
+    }
+
+    // Temporary uploads (for processing)
+    match /temp/{userId}/{fileName} {
+      allow write: if isAuthenticated() && 
+                      isOwner(userId) &&
+                      (isValidImageType() || isValidDocumentType()) &&
+                      isValidImageSize();
+      allow read, delete: if isAuthenticated() && isOwner(userId);
+    }
+
+    // Public assets (app resources, etc.)
+    match /public/{allPaths=**} {
+      allow read: if true;
+      allow write: if false; // Only admins/cloud functions
+    }
+
+    // Admin uploads
+    match /admin/{allPaths=**} {
+      allow read, write: if false; // Only admin users with custom claims
+    }
+
+    // Backup files
+    match /backups/{allPaths=**} {
+      allow read, write: if false; // Only cloud functions
+    }
+  }
+}
