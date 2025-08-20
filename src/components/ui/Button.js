@@ -1,81 +1,101 @@
 import React from 'react';
 import { TouchableOpacity, Text, ActivityIndicator } from 'react-native';
-import { COLORS, SIZES, RADIUS, FONTS } from '../../constants/theme';
+import { COLORS } from '../../constants/colors';
+import { SIZES, RADIUS, FONTS } from '../../constants/theme';
 
 /**
- * Reusable Button Component
- * @param {object} props - Component props
- * @param {string} props.title - Button text
- * @param {function} props.onPress - Press handler
- * @param {string} props.variant - Button variant (primary, secondary, outline, ghost)
- * @param {string} props.size - Button size (sm, md, lg)
- * @param {boolean} props.disabled - Disabled state
- * @param {boolean} props.loading - Loading state
- * @param {object} props.style - Additional styles
- * @param {object} props.textStyle - Additional text styles
- * @param {React.ReactNode} props.icon - Icon component
- * @param {string} props.iconPosition - Icon position (left, right)
+ * Composant Bouton Réutilisable - LogeVite
+ * 
+ * Bouton principal de l'application avec support de multiples variants,
+ * tailles, états de chargement et icônes.
+ * 
+ * Variants disponibles :
+ * - primary : Bouton principal (vert LogeVite)
+ * - secondary : Bouton secondaire (orange LogeVite) 
+ * - accent : Bouton d'accent (bleu)
+ * - outline : Bouton avec bordure uniquement
+ * - ghost : Bouton transparent
+ * - success/warning/error : Boutons sémantiques
+ * 
+ * @param {object} props - Propriétés du composant
+ * @param {string} props.title - Texte affiché sur le bouton
+ * @param {function} props.onPress - Fonction appelée lors du clic
+ * @param {string} props.variant - Variant du bouton (primary, secondary, outline, ghost, etc.)
+ * @param {string} props.size - Taille du bouton (sm, md, lg)
+ * @param {boolean} props.disabled - État désactivé du bouton
+ * @param {boolean} props.loading - État de chargement (affiche un spinner)
+ * @param {object} props.style - Styles additionnels pour le conteneur
+ * @param {object} props.textStyle - Styles additionnels pour le texte
+ * @param {React.ReactNode} props.icon - Composant icône à afficher
+ * @param {string} props.iconPosition - Position de l'icône (left, right)
  */
 const Button = ({
   title,
   onPress,
-  variant = 'primary',
-  size = 'md',
-  disabled = false,
-  loading = false,
-  style = {},
-  textStyle = {},
-  icon = null,
-  iconPosition = 'left',
-  ...props
+  variant = 'primary',        // Variant par défaut : bouton principal
+  size = 'md',               // Taille par défaut : moyenne
+  disabled = false,          // Non désactivé par défaut
+  loading = false,           // Pas en chargement par défaut
+  style = {},               // Styles personnalisés vides par défaut
+  textStyle = {},           // Styles de texte personnalisés vides
+  icon = null,              // Pas d'icône par défaut
+  iconPosition = 'left',    // Icône à gauche par défaut
+  ...props                  // Autres props React Native
 }) => {
-  // Get size configuration
+  // Récupération de la configuration de taille depuis le thème
+  // Fallback sur 'md' si la taille demandée n'existe pas
   const sizeConfig = SIZES.button[size] || SIZES.button.md;
   
-  // Base styles
+  // Styles de base appliqués à tous les boutons
   const baseStyle = {
-    height: sizeConfig.height,
-    paddingHorizontal: sizeConfig.paddingHorizontal,
-    borderRadius: RADIUS.md,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    opacity: (disabled || loading) ? 0.6 : 1,
+    height: sizeConfig.height,                    // Hauteur selon la taille
+    paddingHorizontal: sizeConfig.paddingHorizontal, // Padding horizontal
+    borderRadius: RADIUS.md,                      // Coins arrondis moyens
+    flexDirection: 'row',                         // Layout horizontal pour icône + texte
+    alignItems: 'center',                         // Centrage vertical
+    justifyContent: 'center',                     // Centrage horizontal
+    opacity: (disabled || loading) ? 0.6 : 1,    // Opacité réduite si désactivé/chargement
   };
   
-  // Variant styles
+  // Styles spécifiques à chaque variant de bouton
   const variantStyles = {
+    // Bouton principal - vert LogeVite, utilisé pour actions importantes
     primary: {
-      backgroundColor: COLORS.primary[500],
-      borderWidth: 0,
+      backgroundColor: COLORS.primary[500],  // Fond vert principal
+      borderWidth: 0,                        // Pas de bordure
     },
+    // Bouton secondaire - orange LogeVite, pour actions secondaires
     secondary: {
-      backgroundColor: COLORS.secondary[500],
+      backgroundColor: COLORS.secondary[500], // Fond orange secondaire
       borderWidth: 0,
     },
+    // Bouton d'accent - bleu, pour actions spéciales
     accent: {
-      backgroundColor: COLORS.accent[500],
+      backgroundColor: COLORS.accent[500],    // Fond bleu d'accent
       borderWidth: 0,
     },
+    // Bouton outline - transparent avec bordure, style discret
     outline: {
-      backgroundColor: 'transparent',
-      borderWidth: 1,
-      borderColor: COLORS.primary[500],
+      backgroundColor: 'transparent',         // Fond transparent
+      borderWidth: 1,                         // Bordure fine
+      borderColor: COLORS.primary[500],       // Bordure verte
     },
+    // Bouton ghost - complètement transparent, très discret
     ghost: {
-      backgroundColor: 'transparent',
-      borderWidth: 0,
+      backgroundColor: 'transparent',         // Fond transparent
+      borderWidth: 0,                         // Pas de bordure
     },
+    // Boutons sémantiques - pour actions avec signification particulière
     success: {
-      backgroundColor: COLORS.success,
+      backgroundColor: COLORS.success,        // Fond vert de succès
       borderWidth: 0,
     },
     warning: {
-      backgroundColor: COLORS.warning,
+      backgroundColor: COLORS.warning,        // Fond orange d'alerte
       borderWidth: 0,
     },
     error: {
-      backgroundColor: COLORS.error,
+      backgroundColor: COLORS.error,          // Fond rouge d'erreur
       borderWidth: 0,
     },
   };

@@ -1,202 +1,204 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    // Règles de sécurité Firestore pour LogeVite
+    // Compatibles avec Firebase Web SDK et React Native Firebase
     
-    // Helper functions
-    function isAuthenticated() {
+    // Fonctions d'aide
+    function estAuthentifie() {
       return request.auth != null;
     }
     
-    function isOwner(userId) {
-      return request.auth.uid == userId;
+    function estProprietaire(idUtilisateur) {
+      return request.auth.uid == idUtilisateur;
     }
     
-    function isValidUserType(type) {
+    function estTypeUtilisateurValide(type) {
       return type in ['particulier', 'professionnel'];
     }
     
-    function isValidProfessionalType(type) {
+    function estTypeProfessionnelValide(type) {
       return type in ['agence', 'demarcheur', 'promoteur'];
     }
     
-    function isValidListingStatus(status) {
-      return status in ['active', 'inactive', 'sold', 'rented', 'draft'];
+    function estStatutAnnonceValide(statut) {
+      return statut in ['active', 'inactive', 'vendue', 'louee', 'brouillon'];
     }
     
-    function isValidPropertyType(type) {
+    function estTypeBienValide(type) {
       return type in ['appartement', 'maison', 'villa', 'terrain', 'bureau', 'commerce', 'entrepot'];
     }
     
-    function isValidTransactionType(type) {
+    function estTypeTransactionValide(type) {
       return type in ['vente', 'location'];
     }
 
-    // Users collection
-    match /users/{userId} {
-      allow read: if isAuthenticated();
-      allow create: if isAuthenticated() && 
-                       isOwner(userId) &&
-                       isValidUserType(resource.data.type) &&
-                       (resource.data.type != 'professionnel' || 
-                        isValidProfessionalType(resource.data.professionalType));
-      allow update: if isAuthenticated() && 
-                       isOwner(userId) &&
-                       (resource.data.type == request.resource.data.type) &&
-                       (resource.data.type != 'professionnel' || 
-                        isValidProfessionalType(request.resource.data.professionalType));
-      allow delete: if isAuthenticated() && isOwner(userId);
+    // Collection utilisateurs
+    match /utilisateurs/{idUtilisateur} {
+      allow read: if estAuthentifie();
+      allow create: if estAuthentifie() && 
+                       estProprietaire(idUtilisateur) &&
+                       estTypeUtilisateurValide(resource.data.typeUtilisateur) &&
+                       (resource.data.typeUtilisateur != 'professionnel' || 
+                        estTypeProfessionnelValide(resource.data.typeProfessionnel));
+      allow update: if estAuthentifie() && 
+                       estProprietaire(idUtilisateur) &&
+                       (resource.data.typeUtilisateur == request.resource.data.typeUtilisateur) &&
+                       (resource.data.typeUtilisateur != 'professionnel' || 
+                        estTypeProfessionnelValide(request.resource.data.typeProfessionnel));
+      allow delete: if estAuthentifie() && estProprietaire(idUtilisateur);
       
-      // User preferences subcollection
+      // Sous-collection préférences utilisateur
       match /preferences/{document=**} {
-        allow read, write: if isAuthenticated() && isOwner(userId);
+        allow read, write: if estAuthentifie() && estProprietaire(idUtilisateur);
       }
       
-      // User subscriptions subcollection
-      match /subscriptions/{document=**} {
-        allow read, write: if isAuthenticated() && isOwner(userId);
+      // Sous-collection abonnements utilisateur
+      match /abonnements/{document=**} {
+        allow read, write: if estAuthentifie() && estProprietaire(idUtilisateur);
       }
     }
 
-    // Listings collection (annonces)
-    match /listings/{listingId} {
-      allow read: if isAuthenticated() && 
-                     resource.data.status == 'active';
-      allow read: if isAuthenticated() && 
-                     isOwner(resource.data.ownerId);
-      allow create: if isAuthenticated() && 
-                       isOwner(resource.data.ownerId) &&
-                       isValidListingStatus(resource.data.status) &&
-                       isValidPropertyType(resource.data.propertyType) &&
-                       isValidTransactionType(resource.data.transactionType) &&
-                       resource.data.price is number &&
-                       resource.data.price > 0 &&
-                       resource.data.location.latitude is number &&
-                       resource.data.location.longitude is number &&
+    // Collection annonces
+    match /annonces/{idAnnonce} {
+      allow read: if estAuthentifie() && 
+                     resource.data.statut == 'active';
+      allow read: if estAuthentifie() && 
+                     estProprietaire(resource.data.idProprietaire);
+      allow create: if estAuthentifie() && 
+                       estProprietaire(resource.data.idProprietaire) &&
+                       estStatutAnnonceValide(resource.data.statut) &&
+                       estTypeBienValide(resource.data.typeBien) &&
+                       estTypeTransactionValide(resource.data.typeTransaction) &&
+                       resource.data.prix is number &&
+                       resource.data.prix > 0 &&
+                       resource.data.localisation.latitude is number &&
+                       resource.data.localisation.longitude is number &&
                        resource.data.images is list;
-      allow update: if isAuthenticated() && 
-                       isOwner(resource.data.ownerId) &&
-                       isValidListingStatus(request.resource.data.status) &&
-                       request.resource.data.ownerId == resource.data.ownerId;
-      allow delete: if isAuthenticated() && 
-                       isOwner(resource.data.ownerId);
+      allow update: if estAuthentifie() && 
+                       estProprietaire(resource.data.idProprietaire) &&
+                       estStatutAnnonceValide(request.resource.data.statut) &&
+                       request.resource.data.idProprietaire == resource.data.idProprietaire;
+      allow delete: if estAuthentifie() && 
+                       estProprietaire(resource.data.idProprietaire);
       
-      // Listing analytics subcollection
-      match /analytics/{document=**} {
-        allow read: if isAuthenticated() && isOwner(resource.data.ownerId);
-        allow write: if false; // Only cloud functions can write analytics
+      // Sous-collection statistiques annonce
+      match /statistiques/{document=**} {
+        allow read: if estAuthentifie() && estProprietaire(resource.data.idProprietaire);
+        allow write: if false; // Seules les fonctions cloud peuvent écrire les statistiques
       }
     }
 
-    // Requests collection (demandes particuliers)
-    match /requests/{requestId} {
-      allow read: if isAuthenticated() && 
-                     isOwner(resource.data.userId);
-      allow create: if isAuthenticated() && 
-                       isOwner(resource.data.userId) &&
+    // Collection demandes (particuliers)
+    match /demandes/{idDemande} {
+      allow read: if estAuthentifie() && 
+                     estProprietaire(resource.data.idUtilisateur);
+      allow create: if estAuthentifie() && 
+                       estProprietaire(resource.data.idUtilisateur) &&
                        resource.data.budgetMin is number &&
                        resource.data.budgetMax is number &&
                        resource.data.budgetMin <= resource.data.budgetMax &&
-                       isValidPropertyType(resource.data.propertyType) &&
-                       isValidTransactionType(resource.data.transactionType) &&
-                       resource.data.location.latitude is number &&
-                       resource.data.location.longitude is number;
-      allow update: if isAuthenticated() && 
-                       isOwner(resource.data.userId) &&
-                       request.resource.data.userId == resource.data.userId;
-      allow delete: if isAuthenticated() && 
-                       isOwner(resource.data.userId);
+                       estTypeBienValide(resource.data.typeBien) &&
+                       estTypeTransactionValide(resource.data.typeTransaction) &&
+                       resource.data.localisation.latitude is number &&
+                       resource.data.localisation.longitude is number;
+      allow update: if estAuthentifie() && 
+                       estProprietaire(resource.data.idUtilisateur) &&
+                       request.resource.data.idUtilisateur == resource.data.idUtilisateur;
+      allow delete: if estAuthentifie() && 
+                       estProprietaire(resource.data.idUtilisateur);
       
-      // Request matches subcollection
-      match /matches/{document=**} {
-        allow read: if isAuthenticated() && isOwner(resource.data.userId);
-        allow write: if false; // Only cloud functions can write matches
+      // Sous-collection correspondances demande
+      match /correspondances/{document=**} {
+        allow read: if estAuthentifie() && estProprietaire(resource.data.idUtilisateur);
+        allow write: if false; // Seules les fonctions cloud peuvent écrire les correspondances
       }
     }
 
-    // Conversations collection
-    match /conversations/{conversationId} {
-      allow read: if isAuthenticated() && 
+    // Collection conversations
+    match /conversations/{idConversation} {
+      allow read: if estAuthentifie() && 
                      request.auth.uid in resource.data.participants;
-      allow create: if isAuthenticated() && 
+      allow create: if estAuthentifie() && 
                        request.auth.uid in resource.data.participants &&
                        resource.data.participants.size() == 2;
-      allow update: if isAuthenticated() && 
+      allow update: if estAuthentifie() && 
                        request.auth.uid in resource.data.participants &&
                        request.resource.data.participants == resource.data.participants;
       
-      // Messages subcollection
-      match /messages/{messageId} {
-        allow read: if isAuthenticated() && 
-                       request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants;
-        allow create: if isAuthenticated() && 
-                         isOwner(resource.data.senderId) &&
-                         request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants;
-        allow update: if isAuthenticated() && 
-                         isOwner(resource.data.senderId);
+      // Sous-collection messages
+      match /messages/{idMessage} {
+        allow read: if estAuthentifie() && 
+                       request.auth.uid in get(/databases/$(database)/documents/conversations/$(idConversation)).data.participants;
+        allow create: if estAuthentifie() && 
+                         estProprietaire(resource.data.idExpediteur) &&
+                         request.auth.uid in get(/databases/$(database)/documents/conversations/$(idConversation)).data.participants;
+        allow update: if estAuthentifie() && 
+                         estProprietaire(resource.data.idExpediteur);
       }
     }
 
-    // Favorites collection
-    match /favorites/{favoriteId} {
-      allow read, write: if isAuthenticated() && 
-                            isOwner(resource.data.userId);
+    // Collection favoris
+    match /favoris/{idFavori} {
+      allow read, write: if estAuthentifie() && 
+                            estProprietaire(resource.data.idUtilisateur);
     }
 
-    // Reviews collection
-    match /reviews/{reviewId} {
-      allow read: if isAuthenticated();
-      allow create: if isAuthenticated() && 
-                       isOwner(resource.data.reviewerId) &&
-                       resource.data.rating is number &&
-                       resource.data.rating >= 1 &&
-                       resource.data.rating <= 5;
-      allow update: if isAuthenticated() && 
-                       isOwner(resource.data.reviewerId);
-      allow delete: if isAuthenticated() && 
-                       isOwner(resource.data.reviewerId);
+    // Collection avis
+    match /avis/{idAvis} {
+      allow read: if estAuthentifie();
+      allow create: if estAuthentifie() && 
+                       estProprietaire(resource.data.idEvaluateur) &&
+                       resource.data.note is number &&
+                       resource.data.note >= 1 &&
+                       resource.data.note <= 5;
+      allow update: if estAuthentifie() && 
+                       estProprietaire(resource.data.idEvaluateur);
+      allow delete: if estAuthentifie() && 
+                       estProprietaire(resource.data.idEvaluateur);
     }
 
-    // Reports collection (signalements)
-    match /reports/{reportId} {
-      allow read: if false; // Only admins can read reports
-      allow create: if isAuthenticated() && 
-                       isOwner(resource.data.reporterId) &&
-                       resource.data.reason is string &&
-                       resource.data.targetType in ['listing', 'user', 'message'];
-      allow update, delete: if false; // Only admins can modify reports
+    // Collection signalements
+    match /signalements/{idSignalement} {
+      allow read: if false; // Seuls les admins peuvent lire les signalements
+      allow create: if estAuthentifie() && 
+                       estProprietaire(resource.data.idSignaleur) &&
+                       resource.data.raison is string &&
+                       resource.data.typeCible in ['annonce', 'utilisateur', 'message'];
+      allow update, delete: if false; // Seuls les admins peuvent modifier les signalements
     }
 
-    // Notifications collection
-    match /notifications/{notificationId} {
-      allow read: if isAuthenticated() && 
-                     isOwner(resource.data.userId);
-      allow update: if isAuthenticated() && 
-                       isOwner(resource.data.userId) &&
-                       request.resource.data.userId == resource.data.userId;
-      allow create, delete: if false; // Only cloud functions can create/delete notifications
+    // Collection notifications
+    match /notifications/{idNotification} {
+      allow read: if estAuthentifie() && 
+                     estProprietaire(resource.data.idUtilisateur);
+      allow update: if estAuthentifie() && 
+                       estProprietaire(resource.data.idUtilisateur) &&
+                       request.resource.data.idUtilisateur == resource.data.idUtilisateur;
+      allow create, delete: if false; // Seules les fonctions cloud peuvent créer/supprimer les notifications
     }
 
-    // Admin collections (restricted)
+    // Collections admin (restreintes)
     match /admin/{document=**} {
-      allow read, write: if false; // Only admin users with custom claims
+      allow read, write: if false; // Seuls les utilisateurs admin avec droits personnalisés
     }
 
-    // Analytics collections
-    match /analytics/{document=**} {
-      allow read, write: if false; // Only cloud functions
+    // Collections statistiques
+    match /statistiques/{document=**} {
+      allow read, write: if false; // Seules les fonctions cloud
     }
 
-    // Subscription plans
-    match /subscriptionPlans/{planId} {
-      allow read: if isAuthenticated();
-      allow write: if false; // Only admins
+    // Plans d'abonnement
+    match /plansAbonnement/{idPlan} {
+      allow read: if estAuthentifie();
+      allow write: if false; // Seuls les admins
     }
 
-    // Payment transactions
-    match /transactions/{transactionId} {
-      allow read: if isAuthenticated() && 
-                     isOwner(resource.data.userId);
-      allow write: if false; // Only cloud functions
+    // Transactions de paiement
+    match /transactions/{idTransaction} {
+      allow read: if estAuthentifie() && 
+                     estProprietaire(resource.data.idUtilisateur);
+      allow write: if false; // Seules les fonctions cloud
     }
   }
 }

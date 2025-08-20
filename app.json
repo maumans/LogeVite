@@ -43,7 +43,7 @@
         "VIBRATE",
         "WAKE_LOCK"
       ],
-      "googleServicesFile": "./google-services.json"
+
     },
     "web": {
       "favicon": "./assets/favicon.png",
@@ -73,17 +73,7 @@
           "cameraPermission": "Cette application utilise l'appareil photo pour prendre des photos de vos annonces immobilières."
         }
       ],
-      [
-        "@react-native-firebase/app",
-        {
-          "android": {
-            "googleServicesFile": "./google-services.json"
-          },
-          "ios": {
-            "googleServicesFile": "./GoogleService-Info.plist"
-          }
-        }
-      ]
+
     ],
     "extra": {
       "eas": {

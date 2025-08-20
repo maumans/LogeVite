@@ -8,28 +8,101 @@ Application mobile React Native connectant particuliers et professionnels de l'i
 ## 📋 Phase 1 : MVP (Minimum Viable Product)
 
 ### ✅ Setup & Configuration
-- [ ] Configuration React Native + Expo
-- [ ] Setup TailwindCSS avec NativeWind
-- [ ] Configuration Firebase (Auth, Firestore, Storage, FCM)
-- [ ] Setup React Native Firebase
-- [ ] Configuration des variables d'environnement
+- [x] Configuration React Native + Expo
+- [x] Setup TailwindCSS avec NativeWind
+- [x] Configuration Firebase (Auth, Firestore, Storage, FCM)
+- [x] Setup Firebase Web (compatible Expo Go)
+- [x] Configuration des variables d'environnement
+- [x] **CORRIGÉ** : Erreur cacheSizeBytes Firestore (minimum 1MB)
+- [x] **CORRIGÉ** : Erreur db.settings (initializeFirestore)
 - [ ] Setup des icônes et splash screen
 
 ### ✅ Authentification
-- [ ] Écran de bienvenue/onboarding
-- [ ] Authentification par numéro de téléphone (prioritaire)
-- [ ] Authentification par email
-- [ ] Connexion sociale (Google, Facebook)
-- [ ] Vérification OTP SMS
-- [ ] Gestion des erreurs d'authentification
-- [ ] Persistance de session
+- [x] Écran de bienvenue/onboarding
+- [x] Authentification par numéro de téléphone (prioritaire)
+- [x] Authentification par email
+- [x] Connexion sociale (Google, Facebook)
+- [x] Vérification OTP SMS
+- [x] Gestion des erreurs d'authentification
+- [x] Persistance de session
+- [x] **PROBLÈME RÉSOLU** : Navigation bloquée sur écran d'accueil
+- [x] **CORRIGÉ** : Contexte d'authentification avec toutes les fonctions exportées
+- [x] **CORRIGÉ** : Boutons de chargement infini lors de l'authentification
+- [x] **CORRIGÉ** : Gestion des erreurs Firestore dans l'authentification
+- [x] **AJOUTÉ** : Timeout de sécurité pour éviter les blocages
+- [x] **CORRIGÉ** : Avertissements WebChannel Firestore (configuration optimisée)
+- [x] **AJOUTÉ** : Composant FirestoreConfig pour initialisation stable
+- [x] **CORRIGÉ** : Erreur d'import Firestore (suppression export par défaut conflictuel)
+- [x] **AJOUTÉ** : Composants de test pour diagnostiquer les problèmes Firestore
+- [x] **SUPPRIMÉ** : Composants de test temporaires (FirestoreTest, ImportTest)
+- [x] **AJOUTÉ** : Système complet de gestion des profils utilisateurs
+- [x] **AJOUTÉ** : Écran de sélection du type de compte
+- [x] **AJOUTÉ** : Formulaire profil particulier avec préférences
+- [x] **AJOUTÉ** : Formulaire profil professionnel avec spécialités
+- [x] **AJOUTÉ** : Composant Input réutilisable
+- [x] **AJOUTÉ** : ProfileNavigator pour la navigation des profils
+- [x] **CORRIGÉ** : Flux d'authentification unifié (inscription → profil → accueil)
+- [x] **CORRIGÉ** : Redirection automatique selon l'état du profil
+- [x] **CORRIGÉ** : Navigation conditionnelle basée sur l'état de l'utilisateur
+- [x] **CORRIGÉ** : Erreur de navigation 'Home' depuis ProfileNavigator (utilisation de navigation.reset)
+- [x] **CORRIGÉ** : Problème SafeAreaView - contenu prenant tout l'écran (ajout edges et padding appropriés)
+- [x] **AJOUTÉ** : Profil "Mixte" pour particuliers pouvant rechercher ET publier des annonces
+- [x] **AMÉLIORÉ** : UX de sélection de profil avec option "Passer pour l'instant"
+- [x] **CRÉÉ** : ProfilMixteScreen avec gestion recherche et publication (limite 5 annonces)
+- [x] **CORRIGÉ** : Erreur navigation RESET "Passer pour l'instant" (création profil minimal)
+- [x] **CORRIGÉ** : Redirection après "Continuer" - utilisateur restait sur la même page
+- [x] **CRÉÉ** : HomeScreen moderne avec header, statistiques et actions rapides
+- [x] **AJOUTÉ** : Navigation bottom tabs avec 5 onglets (Accueil, Recherche, Publier, Messages, Profil)
+- [x] **CRÉÉ** : Composants UI modernes (Avatar, Header, QuickActions, StatsCard)
+- [x] **IMPLÉMENTÉ** : Interface adaptative selon le type d'utilisateur
+- [x] **AJOUTÉ** : Système de notifications et badges sur les onglets
+- [x] **ANNULÉ** : Modifications style Facebook (retour à l'interface moderne originale)
+- [x] **NETTOYÉ** : Suppression section accueil profil minimal et styles inutilisés
+- [x] **CORRIGÉ** : Navigation ProfileScreen vers écrans de profil
+
+### ✅ Gestion des Photos de Profil et Édition
+- [x] **INSTALLÉ** : expo-image-picker et react-native-image-picker pour sélection d'images
+- [x] **CRÉÉ** : Service Firebase Storage (storageService.js) avec upload sécurisé
+- [x] **DÉVELOPPÉ** : Composant PhotoProfil réutilisable avec:
+  - Upload depuis galerie ou appareil photo  
+  - Indicateur de progression d'upload
+  - Gestion des permissions
+  - Overlay d'édition avec bouton photo
+  - Support avatar par défaut avec initiales
+- [x] **CRÉÉ** : Écran EditionProfilScreen complet avec:
+  - Modification photo de profil
+  - Édition informations personnelles
+  - Gestion localisation
+  - Champs professionnels conditionnels (selon type utilisateur)
+  - Préférences de recherche (pour particuliers)
+  - Validation formulaire et sauvegarde
+- [x] **INTÉGRÉ** : PhotoProfil dans ProfileScreen en mode lecture seule
+- [x] **CONFIGURÉ** : Navigation vers EditionProfilScreen depuis ProfileScreen  
+- [x] **CORRIGÉ** : Chemins Firebase Storage alignés avec les règles de sécurité
+- [x] **AJOUTÉ** : Fonction mettreAJourProfilLocal dans AuthContext pour synchronisation immédiate
+- [x] **CORRIGÉ** : Erreur "Cannot convert undefined value to object" dans mettreAJourProfilLocal (protection spread operator)
+- [x] **CORRIGÉ** : Protection des spread operators sur objets imbriqués dans tous les écrans de profil
+- [x] **CORRIGÉ** : Sécurisation des accès aux propriétés undefined dans les formulaires de profil
+- [x] **CORRIGÉ** : Protection des accès aux propriétés d'objets imbriqués dans tous les écrans de profil
+- [x] **CORRIGÉ** : Sécurisation des accès aux tableaux et propriétés de longueur dans les validations
+- [x] **CORRIGÉ** : Propriété COLORS.grey manquante dans les constantes de couleurs (alias ajouté pour compatibilité)
+- [x] **CORRIGÉ** : Import incorrect de mettreAJourProfil depuis firestoreService au lieu d'utiliser useAuth()
+- [x] **REFONDU** : Système de gestion des profils avec hook personnalisé useProfil
+- [x] **AMÉLIORÉ** : EditionProfilScreen avec affichage adaptatif selon le type d'utilisateur
+- [x] **AJOUTÉ** : Badges visuels et informations de capacité selon le profil
+- [x] **CENTRALISÉ** : Logique de gestion des profils dans un hook réutilisable
+- [x] **CRÉÉ** : Écran de découverte complet avec carousel de fonctionnalités
+- [x] **INTÉGRÉ** : Navigation vers l'écran de découverte depuis WelcomeScreen
+- [x] **AMÉLIORÉ** : DiscoveryScreen avec design moderne, animations et gradients
+- [x] **AJOUTÉ** : Package expo-linear-gradient pour les effets visuels premium
 
 ### ✅ Profils Utilisateurs
-- [ ] Sélection type de compte (Particulier/Professionnel)
-- [ ] Formulaire profil Particulier
-- [ ] Formulaire profil Professionnel (Agence/Démarcheur)
+- [x] Sélection type de compte (Particulier/Mixte/Professionnel)
+- [x] Formulaire profil Particulier
+- [x] Formulaire profil Mixte (recherche + publication limitée)
+- [x] Formulaire profil Professionnel (Agence/Démarcheur)
 - [ ] Upload photo de profil
-- [ ] Validation des informations
+- [x] Validation des informations
 - [ ] Écran de profil avec édition
 
 ### ✅ Publication d'Annonces (Professionnels)
@@ -252,13 +325,19 @@ Application mobile React Native connectant particuliers et professionnels de l'i
 
 ### Stack Technique
 - **Frontend**: React Native 0.72+ avec JavaScript
-- **Styling**: NativeWind (TailwindCSS pour RN)
+- **Styling**: NativeWind (TailwindCSS pour RN) - Temporairement StyleSheet
 - **Navigation**: React Navigation 6
 - **State Management**: Context API + useReducer
-- **Backend**: Firebase (Auth, Firestore, Storage, Functions)
+- **Backend**: Firebase Web (Auth, Firestore, Storage, Functions)
 - **Notifications**: Firebase Cloud Messaging
 - **Maps**: react-native-maps
 - **Images**: react-native-fast-image
+
+### Configuration Firebase
+- **SDK**: Firebase Web (v10+) pour compatibilité Expo Go
+- **Authentification**: Email/Password, Phone, Google, Facebook
+- **Persistance**: AsyncStorage pour React Native
+- **Migration Future**: React Native Firebase pour production
 
 ### Structure des Données
 ```

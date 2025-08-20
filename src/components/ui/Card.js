@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, TouchableOpacity } from 'react-native';
-import { COLORS, RADIUS, SHADOWS } from '../../constants/theme';
+import { COLORS } from '../../constants/colors';
+import { RADIUS, SHADOWS } from '../../constants/theme';
 
 /**
  * Reusable Card Component

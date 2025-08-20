@@ -1,25 +1,27 @@
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
+    // Règles de sécurité Storage pour LogeVite
+    // Compatibles avec Firebase Web SDK et React Native Firebase
     
-    // Helper functions
-    function isAuthenticated() {
+    // Fonctions d'aide
+    function estAuthentifie() {
       return request.auth != null;
     }
     
-    function isOwner(userId) {
-      return request.auth.uid == userId;
+    function estProprietaire(idUtilisateur) {
+      return request.auth.uid == idUtilisateur;
     }
     
-    function isValidImageType() {
+    function estTypeImageValide() {
       return request.resource.contentType.matches('image/.*');
     }
     
-    function isValidImageSize() {
+    function estTailleImageValide() {
       return request.resource.size < 10 * 1024 * 1024; // 10MB max
     }
     
-    function isValidDocumentType() {
+    function estTypeDocumentValide() {
       return request.resource.contentType in [
         'application/pdf',
         'image/jpeg',
@@ -28,90 +30,90 @@ service firebase.storage {
       ];
     }
 
-    // Profile pictures
-    match /users/{userId}/profile/{fileName} {
-      allow read: if isAuthenticated();
-      allow write: if isAuthenticated() && 
-                      isOwner(userId) &&
-                      isValidImageType() &&
-                      isValidImageSize();
-      allow delete: if isAuthenticated() && isOwner(userId);
+    // Photos de profil
+    match /utilisateurs/{idUtilisateur}/profil/{nomFichier} {
+      allow read: if estAuthentifie();
+      allow write: if estAuthentifie() && 
+                      estProprietaire(idUtilisateur) &&
+                      estTypeImageValide() &&
+                      estTailleImageValide();
+      allow delete: if estAuthentifie() && estProprietaire(idUtilisateur);
     }
 
-    // Listing images
-    match /listings/{listingId}/{fileName} {
-      allow read: if isAuthenticated();
-      allow write: if isAuthenticated() && 
-                      isValidImageType() &&
-                      isValidImageSize() &&
-                      // Verify the user owns the listing
-                      exists(/databases/(default)/documents/listings/$(listingId)) &&
-                      get(/databases/(default)/documents/listings/$(listingId)).data.ownerId == request.auth.uid;
-      allow delete: if isAuthenticated() &&
-                       exists(/databases/(default)/documents/listings/$(listingId)) &&
-                       get(/databases/(default)/documents/listings/$(listingId)).data.ownerId == request.auth.uid;
+    // Images d'annonces
+    match /annonces/{idAnnonce}/{nomFichier} {
+      allow read: if estAuthentifie();
+      allow write: if estAuthentifie() && 
+                      estTypeImageValide() &&
+                      estTailleImageValide() &&
+                      // Vérifier que l'utilisateur possède l'annonce
+                      exists(/databases/(default)/documents/annonces/$(idAnnonce)) &&
+                      get(/databases/(default)/documents/annonces/$(idAnnonce)).data.idProprietaire == request.auth.uid;
+      allow delete: if estAuthentifie() &&
+                       exists(/databases/(default)/documents/annonces/$(idAnnonce)) &&
+                       get(/databases/(default)/documents/annonces/$(idAnnonce)).data.idProprietaire == request.auth.uid;
     }
 
-    // Chat message attachments
-    match /conversations/{conversationId}/messages/{messageId}/{fileName} {
-      allow read: if isAuthenticated() &&
-                     // Verify user is participant in conversation
-                     exists(/databases/(default)/documents/conversations/$(conversationId)) &&
-                     request.auth.uid in get(/databases/(default)/documents/conversations/$(conversationId)).data.participants;
-      allow write: if isAuthenticated() &&
-                      (isValidImageType() || isValidDocumentType()) &&
-                      isValidImageSize() &&
-                      // Verify user is participant in conversation
-                      exists(/databases/(default)/documents/conversations/$(conversationId)) &&
-                      request.auth.uid in get(/databases/(default)/documents/conversations/$(conversationId)).data.participants;
-      allow delete: if isAuthenticated() &&
-                       exists(/databases/(default)/documents/conversations/$(conversationId)/messages/$(messageId)) &&
-                       get(/databases/(default)/documents/conversations/$(conversationId)/messages/$(messageId)).data.senderId == request.auth.uid;
+    // Pièces jointes des messages de chat
+    match /conversations/{idConversation}/messages/{idMessage}/{nomFichier} {
+      allow read: if estAuthentifie() &&
+                     // Vérifier que l'utilisateur participe à la conversation
+                     exists(/databases/(default)/documents/conversations/$(idConversation)) &&
+                     request.auth.uid in get(/databases/(default)/documents/conversations/$(idConversation)).data.participants;
+      allow write: if estAuthentifie() &&
+                      (estTypeImageValide() || estTypeDocumentValide()) &&
+                      estTailleImageValide() &&
+                      // Vérifier que l'utilisateur participe à la conversation
+                      exists(/databases/(default)/documents/conversations/$(idConversation)) &&
+                      request.auth.uid in get(/databases/(default)/documents/conversations/$(idConversation)).data.participants;
+      allow delete: if estAuthentifie() &&
+                       exists(/databases/(default)/documents/conversations/$(idConversation)/messages/$(idMessage)) &&
+                       get(/databases/(default)/documents/conversations/$(idConversation)/messages/$(idMessage)).data.idExpediteur == request.auth.uid;
     }
 
-    // Professional documents (KYC)
-    match /users/{userId}/documents/{fileName} {
-      allow read: if isAuthenticated() && isOwner(userId);
-      allow write: if isAuthenticated() && 
-                      isOwner(userId) &&
-                      isValidDocumentType() &&
-                      request.resource.size < 20 * 1024 * 1024; // 20MB for documents
-      allow delete: if isAuthenticated() && isOwner(userId);
+    // Documents professionnels (KYC)
+    match /utilisateurs/{idUtilisateur}/documents/{nomFichier} {
+      allow read: if estAuthentifie() && estProprietaire(idUtilisateur);
+      allow write: if estAuthentifie() && 
+                      estProprietaire(idUtilisateur) &&
+                      estTypeDocumentValide() &&
+                      request.resource.size < 20 * 1024 * 1024; // 20MB pour les documents
+      allow delete: if estAuthentifie() && estProprietaire(idUtilisateur);
     }
 
-    // Company logos for professionals
-    match /users/{userId}/company/{fileName} {
-      allow read: if isAuthenticated();
-      allow write: if isAuthenticated() && 
-                      isOwner(userId) &&
-                      isValidImageType() &&
-                      isValidImageSize();
-      allow delete: if isAuthenticated() && isOwner(userId);
+    // Logos d'entreprise pour les professionnels
+    match /utilisateurs/{idUtilisateur}/entreprise/{nomFichier} {
+      allow read: if estAuthentifie();
+      allow write: if estAuthentifie() && 
+                      estProprietaire(idUtilisateur) &&
+                      estTypeImageValide() &&
+                      estTailleImageValide();
+      allow delete: if estAuthentifie() && estProprietaire(idUtilisateur);
     }
 
-    // Temporary uploads (for processing)
-    match /temp/{userId}/{fileName} {
-      allow write: if isAuthenticated() && 
-                      isOwner(userId) &&
-                      (isValidImageType() || isValidDocumentType()) &&
-                      isValidImageSize();
-      allow read, delete: if isAuthenticated() && isOwner(userId);
+    // Téléchargements temporaires (pour traitement)
+    match /temporaire/{idUtilisateur}/{nomFichier} {
+      allow write: if estAuthentifie() && 
+                      estProprietaire(idUtilisateur) &&
+                      (estTypeImageValide() || estTypeDocumentValide()) &&
+                      estTailleImageValide();
+      allow read, delete: if estAuthentifie() && estProprietaire(idUtilisateur);
     }
 
-    // Public assets (app resources, etc.)
-    match /public/{allPaths=**} {
+    // Ressources publiques (ressources de l'app, etc.)
+    match /public/{tousChemins=**} {
       allow read: if true;
-      allow write: if false; // Only admins/cloud functions
+      allow write: if false; // Seuls les admins/fonctions cloud
     }
 
-    // Admin uploads
-    match /admin/{allPaths=**} {
-      allow read, write: if false; // Only admin users with custom claims
+    // Téléchargements admin
+    match /admin/{tousChemins=**} {
+      allow read, write: if false; // Seuls les utilisateurs admin avec droits personnalisés
     }
 
-    // Backup files
-    match /backups/{allPaths=**} {
-      allow read, write: if false; // Only cloud functions
+    // Fichiers de sauvegarde
+    match /sauvegardes/{tousChemins=**} {
+      allow read, write: if false; // Seules les fonctions cloud
     }
   }
 }

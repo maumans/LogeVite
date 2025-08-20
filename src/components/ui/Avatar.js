@@ -1,106 +1,153 @@
-import React from 'react';
-import { View, Text, Image, TouchableOpacity } from 'react-native';
-import { COLORS, SIZES, FONTS } from '../../constants/theme';
-import { getInitials } from '../../utils/formatters';
-
 /**
- * Reusable Avatar Component
- * @param {object} props - Component props
- * @param {string} props.source - Image source URI
- * @param {string} props.name - User name for initials fallback
- * @param {string} props.size - Avatar size (sm, md, lg, xl, 2xl, 3xl)
- * @param {function} props.onPress - Press handler
- * @param {object} props.style - Additional styles
- * @param {string} props.backgroundColor - Custom background color
- * @param {string} props.textColor - Custom text color
- * @param {boolean} props.showBorder - Show border
- * @param {string} props.borderColor - Border color
+ * Composant Avatar moderne
+ * 
+ * Avatar avec image, initiales et indicateurs de statut
  */
+
+import React from 'react';
+import { View, Text, Image, StyleSheet } from 'react-native';
+import { COLORS } from '../../constants/colors';
+
 const Avatar = ({
-  source,
+  size = 'md', // 'sm', 'md', 'lg', 'xl'
+  image,
   name,
-  size = 'md',
-  onPress,
-  style = {},
-  backgroundColor,
-  textColor,
-  showBorder = false,
-  borderColor = COLORS.border.light,
+  email,
+  showStatus = false,
+  status = 'online', // 'online', 'offline', 'busy'
+  style,
   ...props
 }) => {
-  // Get size configuration
-  const avatarSize = SIZES.avatar[size] || SIZES.avatar.md;
-  
-  // Generate initials if no image
-  const initials = getInitials(name);
-  
-  // Base styles
-  const containerStyle = {
-    width: avatarSize,
-    height: avatarSize,
-    borderRadius: avatarSize / 2,
-    backgroundColor: backgroundColor || COLORS.primary[100],
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden',
-    borderWidth: showBorder ? 2 : 0,
-    borderColor: borderColor,
-    ...style,
+  // Tailles d'avatar
+  const sizes = {
+    sm: 32,
+    md: 48,
+    lg: 64,
+    xl: 96
   };
-  
-  // Text styles for initials
-  const textStyle = {
-    fontSize: avatarSize * 0.4,
-    fontFamily: FONTS.families.poppins.semibold,
-    color: textColor || COLORS.primary[700],
-    textAlign: 'center',
+
+  const avatarSize = sizes[size];
+  const statusSize = avatarSize * 0.25;
+
+  // Couleurs de statut
+  const statusColors = {
+    online: '#10B981',
+    offline: '#6B7280',
+    busy: '#EF4444'
   };
-  
-  // Image styles
-  const imageStyle = {
-    width: '100%',
-    height: '100%',
-    resizeMode: 'cover',
-  };
-  
-  const renderContent = () => {
-    if (source) {
-      return (
-        <Image
-          source={{ uri: source }}
-          style={imageStyle}
-          defaultSource={require('../../../assets/images/avatar-placeholder.png')}
-        />
-      );
+
+  // Générer les initiales à partir du nom ou email
+  const getInitials = () => {
+    if (name) {
+      return name
+        .split(' ')
+        .map(word => word.charAt(0))
+        .join('')
+        .substring(0, 2)
+        .toUpperCase();
     }
     
-    return (
-      <Text style={textStyle}>
-        {initials || '?'}
-      </Text>
-    );
+    if (email) {
+      return email.charAt(0).toUpperCase();
+    }
+    
+    return '?';
   };
-  
-  // If onPress is provided, make it touchable
-  if (onPress) {
-    return (
-      <TouchableOpacity
-        style={containerStyle}
-        onPress={onPress}
-        activeOpacity={0.7}
-        {...props}
-      >
-        {renderContent()}
-      </TouchableOpacity>
-    );
-  }
-  
-  // Otherwise, render as View
+
+  // Générer une couleur de fond basée sur le nom/email
+  const getBackgroundColor = () => {
+    const colors = [
+      '#EF4444', '#F97316', '#F59E0B', '#EAB308',
+      '#84CC16', '#22C55E', '#10B981', '#14B8A6',
+      '#06B6D4', '#0EA5E9', '#3B82F6', '#6366F1',
+      '#8B5CF6', '#A855F7', '#D946EF', '#EC4899'
+    ];
+    
+    const text = name || email || 'default';
+    const index = text.charCodeAt(0) % colors.length;
+    return colors[index];
+  };
+
   return (
-    <View style={containerStyle} {...props}>
-      {renderContent()}
+    <View style={[styles.container, style]} {...props}>
+      <View
+        style={[
+          styles.avatar,
+          {
+            width: avatarSize,
+            height: avatarSize,
+            borderRadius: avatarSize / 2,
+            backgroundColor: image ? COLORS.gray[200] : getBackgroundColor()
+          }
+        ]}
+      >
+        {image ? (
+          <Image
+            source={{ uri: image }}
+            style={[
+              styles.image,
+              {
+                width: avatarSize,
+                height: avatarSize,
+                borderRadius: avatarSize / 2
+              }
+            ]}
+          />
+        ) : (
+          <Text
+            style={[
+              styles.initials,
+              {
+                fontSize: avatarSize * 0.4,
+                color: COLORS.white
+              }
+            ]}
+          >
+            {getInitials()}
+          </Text>
+        )}
+      </View>
+
+      {showStatus && (
+        <View
+          style={[
+            styles.statusIndicator,
+            {
+              width: statusSize,
+              height: statusSize,
+              borderRadius: statusSize / 2,
+              backgroundColor: statusColors[status],
+              bottom: 0,
+              right: 0
+            }
+          ]}
+        />
+      )}
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    position: 'relative'
+  },
+  avatar: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden'
+  },
+  image: {
+    resizeMode: 'cover'
+  },
+  initials: {
+    fontWeight: 'bold',
+    textAlign: 'center'
+  },
+  statusIndicator: {
+    position: 'absolute',
+    borderWidth: 2,
+    borderColor: COLORS.white
+  }
+});
 
 export default Avatar;

@@ -2,7 +2,7 @@
 
 [![React Native](https://img.shields.io/badge/React%20Native-0.79.5-blue.svg)](https://reactnative.dev/)
 [![Expo](https://img.shields.io/badge/Expo-~53.0.20-black.svg)](https://expo.dev/)
-[![Firebase](https://img.shields.io/badge/Firebase-20.5.0-orange.svg)](https://firebase.google.com/)
+[![Firebase](https://img.shields.io/badge/Firebase%20Web-10.7.1-orange.svg)](https://firebase.google.com/)
 [![TailwindCSS](https://img.shields.io/badge/TailwindCSS-3.4.14-blue.svg)](https://tailwindcss.com/)
 
 ## 🎯 À Propos
@@ -25,7 +25,7 @@ LogeVite est une application mobile moderne qui connecte les particuliers cherch
 - **Frontend**: React Native 0.79.5 + Expo 53
 - **Styling**: NativeWind (TailwindCSS pour React Native)
 - **Navigation**: React Navigation 6
-- **Backend**: Firebase (Auth, Firestore, Storage, Functions)
+- **Backend**: Firebase Web SDK (Auth, Firestore, Storage, Functions)
 - **State Management**: Context API + useReducer
 - **Notifications**: Firebase Cloud Messaging
 - **Maps**: React Native Maps
@@ -56,9 +56,9 @@ LogeVite est une application mobile moderne qui connecte les particuliers cherch
 
 3. **Configuration Firebase**
    - Créer un projet Firebase sur [console.firebase.google.com](https://console.firebase.google.com)
-   - Télécharger `google-services.json` (Android) et `GoogleService-Info.plist` (iOS)
-   - Placer les fichiers dans le dossier racine du projet
-   - Configurer les règles Firestore et Storage (fichiers inclus dans `/firebase/`)
+   - Actuellement configuré avec **Firebase Web SDK** pour compatibilité Expo Go
+   - Les règles Firestore et Storage sont incluses dans `/firebase/`
+   - Pour la production, voir le guide de migration vers React Native Firebase
 
 4. **Variables d'environnement**
    ```bash
@@ -95,6 +95,8 @@ LogeVite/
 │   ├── storage.rules       # Règles Storage
 │   └── functions/          # Cloud Functions
 ├── devBook.md              # Guide de développement
+├── FIREBASE_MIGRATION.md   # Guide de migration Firebase
+├── FIREBASE_CONFIGURATION.md # Configuration Firebase complète
 └── README.md
 ```
 

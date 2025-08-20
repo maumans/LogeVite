@@ -11,34 +11,37 @@ export const API_BASE_URL = __DEV__
   ? 'http://localhost:5001/logevite-dev/us-central1'
   : 'https://us-central1-logevite-prod.cloudfunctions.net';
 
-// Firebase collections
+// Collections Firebase
 export const COLLECTIONS = {
-  USERS: 'users',
-  LISTINGS: 'listings',
-  REQUESTS: 'requests',
+  UTILISATEURS: 'utilisateurs',
+  ANNONCES: 'annonces',
+  DEMANDES: 'demandes',
   CONVERSATIONS: 'conversations',
   MESSAGES: 'messages',
   NOTIFICATIONS: 'notifications',
-  FAVORITES: 'favorites',
-  REVIEWS: 'reviews',
-  REPORTS: 'reports',
+  FAVORIS: 'favoris',
+  AVIS: 'avis',
+  SIGNALEMENTS: 'signalements',
+  STATISTIQUES: 'statistiques',
+  PLANS_ABONNEMENT: 'plansAbonnement',
+  TRANSACTIONS: 'transactions',
 };
 
-// User types
-export const USER_TYPES = {
+// Types d'utilisateurs
+export const TYPES_UTILISATEURS = {
   PARTICULIER: 'particulier',
   PROFESSIONNEL: 'professionnel',
 };
 
-// Professional types
-export const PROFESSIONAL_TYPES = {
+// Types de professionnels
+export const TYPES_PROFESSIONNELS = {
   AGENCE: 'agence',
   DEMARCHEUR: 'demarcheur',
   PROMOTEUR: 'promoteur',
 };
 
-// Property types
-export const PROPERTY_TYPES = {
+// Types de biens
+export const TYPES_BIENS = {
   APPARTEMENT: 'appartement',
   MAISON: 'maison',
   VILLA: 'villa',
@@ -48,26 +51,26 @@ export const PROPERTY_TYPES = {
   ENTREPOT: 'entrepot',
 };
 
-// Transaction types
-export const TRANSACTION_TYPES = {
+// Types de transactions
+export const TYPES_TRANSACTIONS = {
   VENTE: 'vente',
   LOCATION: 'location',
 };
 
-// Listing status
-export const LISTING_STATUS = {
+// Statuts d'annonces
+export const STATUTS_ANNONCES = {
   ACTIVE: 'active',
   INACTIVE: 'inactive',
-  SOLD: 'sold',
-  RENTED: 'rented',
-  DRAFT: 'draft',
-  EXPIRED: 'expired',
+  VENDUE: 'vendue',
+  LOUEE: 'louee',
+  BROUILLON: 'brouillon',
+  EXPIREE: 'expiree',
 };
 
-// Guinea regions and cities
-export const GUINEA_LOCATIONS = {
+// Régions et villes de Guinée
+export const LOCALISATIONS_GUINEE = {
   CONAKRY: {
-    name: 'Conakry',
+    nom: 'Conakry',
     communes: [
       'Kaloum',
       'Dixinn',
@@ -77,98 +80,98 @@ export const GUINEA_LOCATIONS = {
     ],
   },
   KANKAN: {
-    name: 'Kankan',
+    nom: 'Kankan',
     communes: ['Kankan'],
   },
   LABE: {
-    name: 'Labé',
+    nom: 'Labé',
     communes: ['Labé'],
   },
   NZEREKORE: {
-    name: 'N\'Zérékoré',
+    nom: 'N\'Zérékoré',
     communes: ['N\'Zérékoré'],
   },
   KINDIA: {
-    name: 'Kindia',
+    nom: 'Kindia',
     communes: ['Kindia'],
   },
   BOKE: {
-    name: 'Boké',
+    nom: 'Boké',
     communes: ['Boké'],
   },
   FARANAH: {
-    name: 'Faranah',
+    nom: 'Faranah',
     communes: ['Faranah'],
   },
   MAMOU: {
-    name: 'Mamou',
+    nom: 'Mamou',
     communes: ['Mamou'],
   },
 };
 
-// Phone number formats
-export const PHONE_FORMATS = {
-  GUINEA_PREFIX: '+224',
-  OPERATORS: {
+// Formats de numéros de téléphone
+export const FORMATS_TELEPHONE = {
+  PREFIXE_GUINEE: '+224',
+  OPERATEURS: {
     ORANGE: ['62', '64', '65', '66', '67'],
     MTN: ['61', '63', '68', '69'],
     CELLCOM: ['60'],
   },
 };
 
-// Validation rules
+// Règles de validation
 export const VALIDATION = {
-  PASSWORD_MIN_LENGTH: 6,
-  PHONE_LENGTH: 8, // Without country code
-  MAX_IMAGES_PER_LISTING: 10,
-  MAX_IMAGE_SIZE_MB: 5,
-  MAX_DESCRIPTION_LENGTH: 1000,
-  MIN_PRICE: 10000, // 10,000 GNF
-  MAX_PRICE: 10000000000, // 10 billion GNF
+  LONGUEUR_MIN_MOT_DE_PASSE: 6,
+  LONGUEUR_TELEPHONE: 8, // Sans indicatif pays
+  MAX_IMAGES_PAR_ANNONCE: 10,
+  TAILLE_MAX_IMAGE_MB: 5,
+  LONGUEUR_MAX_DESCRIPTION: 1000,
+  PRIX_MIN: 10000, // 10 000 GNF
+  PRIX_MAX: 10000000000, // 10 milliards GNF
 };
 
-// Social media platforms
-export const SOCIAL_PLATFORMS = {
+// Plateformes de réseaux sociaux
+export const PLATEFORMES_SOCIALES = {
   FACEBOOK: 'facebook',
   WHATSAPP: 'whatsapp',
   TELEGRAM: 'telegram',
   MESSENGER: 'messenger',
 };
 
-// Notification types
-export const NOTIFICATION_TYPES = {
-  MATCH: 'match',
+// Types de notifications
+export const TYPES_NOTIFICATIONS = {
+  CORRESPONDANCE: 'correspondance',
   MESSAGE: 'message',
-  REQUEST_MATCHES: 'request_matches',
-  LISTING_EXPIRED: 'listing_expired',
-  SUBSCRIPTION_EXPIRED: 'subscription_expired',
+  CORRESPONDANCES_DEMANDE: 'correspondances_demande',
+  ANNONCE_EXPIREE: 'annonce_expiree',
+  ABONNEMENT_EXPIRE: 'abonnement_expire',
 };
 
-// Subscription plans
-export const SUBSCRIPTION_PLANS = {
-  FREE: {
-    id: 'free',
-    name: 'Gratuit',
-    price: 0,
-    duration: 30, // days
-    maxListings: 3,
-    features: ['Publication d\'annonces limitée', 'Messages de base'],
+// Plans d'abonnement
+export const PLANS_ABONNEMENT = {
+  GRATUIT: {
+    id: 'gratuit',
+    nom: 'Gratuit',
+    prix: 0,
+    duree: 30, // jours
+    maxAnnonces: 3,
+    fonctionnalites: ['Publication d\'annonces limitée', 'Messages de base'],
   },
   BASIC: {
     id: 'basic',
-    name: 'Basic',
-    price: 50000, // 50,000 GNF
-    duration: 30,
-    maxListings: 10,
-    features: ['Plus d\'annonces', 'Support prioritaire', 'Statistiques de base'],
+    nom: 'Basic',
+    prix: 50000, // 50 000 GNF
+    duree: 30,
+    maxAnnonces: 10,
+    fonctionnalites: ['Plus d\'annonces', 'Support prioritaire', 'Statistiques de base'],
   },
   PREMIUM: {
     id: 'premium',
-    name: 'Premium',
-    price: 150000, // 150,000 GNF
-    duration: 30,
-    maxListings: 50,
-    features: [
+    nom: 'Premium',
+    prix: 150000, // 150 000 GNF
+    duree: 30,
+    maxAnnonces: 50,
+    fonctionnalites: [
       'Annonces illimitées',
       'Boost automatique',
       'Statistiques avancées',
@@ -177,24 +180,24 @@ export const SUBSCRIPTION_PLANS = {
   },
   PRO: {
     id: 'pro',
-    name: 'Professionnel',
-    price: 300000, // 300,000 GNF
-    duration: 30,
-    maxListings: -1, // unlimited
-    features: [
+    nom: 'Professionnel',
+    prix: 300000, // 300 000 GNF
+    duree: 30,
+    maxAnnonces: -1, // illimité
+    fonctionnalites: [
       'Tout Premium +',
-      'API access',
+      'Accès API',
       'Intégrations avancées',
       'Manager dédié',
     ],
   },
 };
 
-// Default values
-export const DEFAULTS = {
-  SEARCH_RADIUS: 10, // km
-  LISTING_EXPIRY_DAYS: 90,
-  MAX_CONVERSATION_MESSAGES: 1000,
-  IMAGE_QUALITY: 0.8,
-  PAGINATION_LIMIT: 20,
+// Valeurs par défaut
+export const VALEURS_DEFAUT = {
+  RAYON_RECHERCHE: 10, // km
+  JOURS_EXPIRATION_ANNONCE: 90,
+  MAX_MESSAGES_CONVERSATION: 1000,
+  QUALITE_IMAGE: 0.8,
+  LIMITE_PAGINATION: 20,
 };
