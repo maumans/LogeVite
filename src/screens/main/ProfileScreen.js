@@ -9,10 +9,7 @@ import { View, Text, StyleSheet, ScrollView, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../contexts/AuthContext';
 import { COLORS } from '../../constants/colors';
-import Header from '../../components/ui/Header';
-import Card from '../../components/ui/Card';
-import Button from '../../components/ui/Button';
-import PhotoProfil from '../../components/ui/PhotoProfil';
+import { Header, Card, Button, Icon, Icons, PhotoProfil } from '../../components/ui';
 
 const ProfileScreen = ({ navigation }) => {
   const { utilisateur, profilUtilisateur, seDeconnecter } = useAuth();
@@ -89,9 +86,12 @@ const ProfileScreen = ({ navigation }) => {
           
           {profilUtilisateur?.profilMinimal && (
             <View style={styles.incompleteWarning}>
-              <Text style={styles.warningText}>
-                ⚠️ Profil incomplet - Complétez vos informations pour une meilleure expérience
-              </Text>
+              <View style={styles.warningHeader}>
+                <Icon {...Icons.warning} size={20} color="#F59E0B" />
+                <Text style={styles.warningText}>
+                  Profil incomplet - Complétez vos informations pour une meilleure expérience
+                </Text>
+              </View>
               <Button
                 title="Compléter maintenant"
                 onPress={() => navigation.getParent()?.navigate('Profile')}
@@ -109,27 +109,36 @@ const ProfileScreen = ({ navigation }) => {
             <Text style={styles.cardTitle}>Informations</Text>
             
             <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>Téléphone</Text>
-              <Text style={styles.infoValue}>
-                {profilUtilisateur?.telephone || 'Non renseigné'}
-              </Text>
+              <Icon {...Icons.phone} size={20} color={COLORS.text.secondary} />
+              <View style={styles.infoContent}>
+                <Text style={styles.infoLabel}>Téléphone</Text>
+                <Text style={styles.infoValue}>
+                  {profilUtilisateur?.telephone || 'Non renseigné'}
+                </Text>
+              </View>
             </View>
             
             <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>Localisation</Text>
-              <Text style={styles.infoValue}>
-                {profilUtilisateur?.localisation?.ville || 'Non renseignée'}
-                {profilUtilisateur?.localisation?.commune && 
-                  `, ${profilUtilisateur.localisation.commune}`
-                }
-              </Text>
+              <Icon {...Icons.location} size={20} color={COLORS.text.secondary} />
+              <View style={styles.infoContent}>
+                <Text style={styles.infoLabel}>Localisation</Text>
+                <Text style={styles.infoValue}>
+                  {profilUtilisateur?.localisation?.ville || 'Non renseignée'}
+                  {profilUtilisateur?.localisation?.commune && 
+                    `, ${profilUtilisateur.localisation.commune}`
+                  }
+                </Text>
+              </View>
             </View>
             
             <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>Membre depuis</Text>
-              <Text style={styles.infoValue}>
-                {new Date().toLocaleDateString('fr-FR')}
-              </Text>
+              <Icon {...Icons.calendar} size={20} color={COLORS.text.secondary} />
+              <View style={styles.infoContent}>
+                <Text style={styles.infoLabel}>Membre depuis</Text>
+                <Text style={styles.infoValue}>
+                  {new Date().toLocaleDateString('fr-FR')}
+                </Text>
+              </View>
             </View>
           </Card>
         )}
@@ -138,37 +147,49 @@ const ProfileScreen = ({ navigation }) => {
         <Card style={styles.actionsCard}>
           <Text style={styles.cardTitle}>Actions</Text>
           
-          <Button
-            title="Modifier mon profil"
-            onPress={() => navigation.getParent()?.navigate('Profile', { screen: 'EditionProfil' })}
-            variant="outline"
-            size="lg"
-            style={styles.actionButton}
-          />
+          <View style={styles.actionRowContainer}>
+            <Icon {...Icons.edit} size={20} color={COLORS.primary[500]} />
+            <Button
+              title="Modifier mon profil"
+              onPress={() => navigation.getParent()?.navigate('Profile', { screen: 'EditionProfil' })}
+              variant="outline"
+              size="lg"
+              style={styles.actionButton}
+            />
+          </View>
           
-          <Button
-            title="Paramètres"
-            onPress={() => Alert.alert('Paramètres', 'Fonctionnalité bientôt disponible')}
-            variant="outline"
-            size="lg"
-            style={styles.actionButton}
-          />
+          <View style={styles.actionRowContainer}>
+            <Icon {...Icons.settings} size={20} color={COLORS.primary[500]} />
+            <Button
+              title="Paramètres"
+              onPress={() => Alert.alert('Paramètres', 'Fonctionnalité bientôt disponible')}
+              variant="outline"
+              size="lg"
+              style={styles.actionButton}
+            />
+          </View>
           
-          <Button
-            title="Aide et Support"
-            onPress={() => Alert.alert('Support', 'Contactez-nous à support@logevite.com')}
-            variant="outline"
-            size="lg"
-            style={styles.actionButton}
-          />
+          <View style={styles.actionRowContainer}>
+            <Icon {...Icons.info} size={20} color={COLORS.primary[500]} />
+            <Button
+              title="Aide et Support"
+              onPress={() => Alert.alert('Support', 'Contactez-nous à support@logevite.com')}
+              variant="outline"
+              size="lg"
+              style={styles.actionButton}
+            />
+          </View>
           
-          <Button
-            title="Se déconnecter"
-            onPress={handleLogout}
-            variant="outline"
-            size="lg"
-            style={[styles.actionButton, styles.logoutButton]}
-          />
+          <View style={styles.actionRowContainer}>
+            <Icon {...Icons.logout} size={20} color="#DC2626" />
+            <Button
+              title="Se déconnecter"
+              onPress={handleLogout}
+              variant="outline"
+              size="lg"
+              style={[styles.actionButton, styles.logoutButton]}
+            />
+          </View>
         </Card>
 
         {/* Espacement pour le bottom tab */}
@@ -227,11 +248,17 @@ const styles = StyleSheet.create({
     borderColor: `${COLORS.warning}30`,
     alignItems: 'center'
   },
+  warningHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12
+  },
   warningText: {
     fontSize: 14,
     color: COLORS.warning,
     textAlign: 'center',
-    marginBottom: 12
+    marginLeft: 8,
+    flex: 1
   },
   completeButton: {
     width: '100%'
@@ -248,11 +275,17 @@ const styles = StyleSheet.create({
   },
   infoRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
     paddingVertical: 12,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.gray[200]
+  },
+  infoContent: {
+    flex: 1,
+    marginLeft: 12,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center'
   },
   infoLabel: {
     fontSize: 16,
@@ -270,8 +303,14 @@ const styles = StyleSheet.create({
     padding: 20,
     marginBottom: 16
   },
-  actionButton: {
+  actionRowContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 12
+  },
+  actionButton: {
+    flex: 1,
+    marginLeft: 12
   },
   logoutButton: {
     borderColor: COLORS.error,

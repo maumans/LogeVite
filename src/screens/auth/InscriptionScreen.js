@@ -14,9 +14,10 @@ import {
   ScrollView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native';
-import { Button, Card } from '../../components/ui';
+import { Button, Card, ErrorDisplay } from '../../components/ui';
 import { COLORS } from '../../constants/colors';
 import { sinscrireEmail } from '../../services/authService';
+import { handleFirebaseError } from '../../utils/errorHandler';
 
 const InscriptionScreen = ({ navigation }) => {
   const [prenom, setPrenom] = useState('');
@@ -26,6 +27,7 @@ const InscriptionScreen = ({ navigation }) => {
   const [confirmerMotDePasse, setConfirmerMotDePasse] = useState('');
   const [typeUtilisateur, setTypeUtilisateur] = useState('particulier');
   const [chargement, setChargement] = useState(false);
+  const [erreur, setErreur] = useState(null);
 
   const styles = useMemo(() => ({
     container: {
@@ -131,26 +133,41 @@ const InscriptionScreen = ({ navigation }) => {
 
   const handleInscription = useCallback(async () => {
     if (!prenom.trim() || !nom.trim() || !email.trim() || !motDePasse.trim()) {
-      Alert.alert('Erreur', 'Veuillez remplir tous les champs');
+      setErreur({
+        message: 'Veuillez remplir tous les champs',
+        severity: 'warning'
+      });
       return;
     }
 
-    if (motDePasse.length < 6) {
-      Alert.alert('Erreur', 'Le mot de passe doit contenir au moins 6 caractères');
+    if (motDePasse.length < 8) {
+      setErreur({
+        message: 'Le mot de passe doit contenir au moins 8 caractères',
+        solution: 'Votre mot de passe doit contenir des lettres, chiffres et caractères spéciaux',
+        severity: 'warning'
+      });
       return;
     }
 
     if (motDePasse !== confirmerMotDePasse) {
-      Alert.alert('Erreur', 'Les mots de passe ne correspondent pas');
+      setErreur({
+        message: 'Les mots de passe ne correspondent pas',
+        severity: 'warning'
+      });
       return;
     }
 
     setChargement(true);
+    setErreur(null);
     
     // Timeout de sécurité pour éviter les blocages
     const timeoutId = setTimeout(() => {
       setChargement(false);
-      Alert.alert('Erreur', 'Délai d\'attente dépassé. Veuillez réessayer.');
+      setErreur({
+        message: 'Délai d\'attente dépassé',
+        solution: 'Veuillez réessayer ou vérifier votre connexion',
+        severity: 'warning'
+      });
     }, 30000); // 30 secondes
 
     try {
@@ -170,7 +187,16 @@ const InscriptionScreen = ({ navigation }) => {
       }
     } catch (error) {
       clearTimeout(timeoutId);
-      Alert.alert('Erreur d\'inscription', error.message);
+      
+      // Utiliser l'erreur enrichie si disponible, sinon utiliser le gestionnaire
+      if (error.errorInfo) {
+        setErreur(error.errorInfo);
+        console.error('Erreur d\'inscription:', error.errorInfo);
+      } else {
+        const errorInfo = handleFirebaseError(error, 'signup');
+        setErreur(errorInfo);
+        console.error('Erreur d\'inscription:', errorInfo);
+      }
     } finally {
       setChargement(false);
     }
@@ -302,6 +328,16 @@ const InscriptionScreen = ({ navigation }) => {
               size="lg"
               loading={chargement}
             />
+
+            {/* Affichage des erreurs */}
+            {erreur && (
+              <ErrorDisplay
+                error={erreur}
+                onRetry={() => setErreur(null)}
+                onDismiss={() => setErreur(null)}
+                style={{ marginTop: 16 }}
+              />
+            )}
           </Card>
 
           {/* Pied de page */}

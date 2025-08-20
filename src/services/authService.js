@@ -25,6 +25,7 @@ import {
   recupererUtilisateur, 
   mettreAJourUtilisateur 
 } from './firestoreService';
+import { handleFirebaseError } from '../utils/errorHandler';
 
 // Fournisseurs d'authentification
 const googleProvider = new GoogleAuthProvider();
@@ -97,7 +98,14 @@ export const sinscrireEmail = async (email, motDePasse, donneesProfil) => {
     };
   } catch (error) {
     console.error('Erreur lors de l\'inscription:', error);
-    throw new Error(getErrorMessage(error.code));
+    const errorInfo = handleFirebaseError(error, 'signup');
+    // Créer une erreur enrichie avec toutes les informations
+    const enrichedError = new Error(errorInfo.message);
+    enrichedError.errorInfo = errorInfo;
+    enrichedError.code = errorInfo.code;
+    enrichedError.severity = errorInfo.severity;
+    enrichedError.solution = errorInfo.solution;
+    throw enrichedError;
   }
 };
 
@@ -121,7 +129,14 @@ export const seConnecterEmail = async (email, motDePasse) => {
     };
   } catch (error) {
     console.error('Erreur lors de la connexion:', error);
-    throw new Error(getErrorMessage(error.code));
+    const errorInfo = handleFirebaseError(error, 'login');
+    // Créer une erreur enrichie avec toutes les informations
+    const enrichedError = new Error(errorInfo.message);
+    enrichedError.errorInfo = errorInfo;
+    enrichedError.code = errorInfo.code;
+    enrichedError.severity = errorInfo.severity;
+    enrichedError.solution = errorInfo.solution;
+    throw enrichedError;
   }
 };
 
@@ -162,16 +177,17 @@ export const seConnecterTelephone = async (numeroTelephone, codeSMS, verificatio
     // Simulation d'un délai
     await new Promise(resolve => setTimeout(resolve, 1500));
     
-    // Vérifier le code SMS (simulation)
-    if (codeSMS === '123456') {
-      return {
-        success: true,
-        user: {
-          uid: 'demo-user-' + Date.now(),
-          phoneNumber: numeroTelephone
-        }
-      };
-    } else {
+          // Vérifier le code SMS (simulation)
+      if (codeSMS === '123456') {
+        return {
+          success: true,
+          user: {
+            uid: 'demo-user-' + Date.now(),
+            phoneNumber: numeroTelephone
+          },
+          shouldRedirect: true // Flag pour indiquer qu'une redirection est nécessaire
+        };
+      } else {
       throw new Error('Code SMS incorrect. Utilisez 123456 pour la démo.');
     }
   } catch (error) {

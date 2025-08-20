@@ -20,7 +20,8 @@ import {
   ScrollView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native';
-import { Button, Card } from '../../components/ui';
+import { Button, Card, ErrorDisplay, Input } from '../../components/ui';
+import Icon, { Icons } from '../../components/ui/Icon';
 import { COLORS } from '../../constants/colors';
 import { 
   seConnecterEmail, 
@@ -30,6 +31,9 @@ import {
   envoyerCodeSMS 
 } from '../../services/authService';
 import { useAuth } from '../../contexts/AuthContext';
+import { handleFirebaseError, formatErrorForUser } from '../../utils/errorHandler';
+import { useFormValidation } from '../../hooks/useFormValidation';
+import { schemaConnexionEmail, schemaConnexionTelephone } from '../../utils/validationSchemas';
 
 const LoginScreen = ({ navigation }) => {
   // États locaux
@@ -41,6 +45,11 @@ const LoginScreen = ({ navigation }) => {
   const [modeConnexion, setModeConnexion] = useState('email'); // 'email' ou 'telephone'
   const [chargement, setChargement] = useState(false);
   const [etapeSMS, setEtapeSMS] = useState(1); // 1: téléphone, 2: code
+  const [erreur, setErreur] = useState(null);
+  
+  // Validation des formulaires
+  const emailValidation = useFormValidation(schemaConnexionEmail);
+  const phoneValidation = useFormValidation(schemaConnexionTelephone);
 
   // Contexte d'authentification
   const { mettreAJourProfilLocal } = useAuth();
@@ -181,17 +190,45 @@ const LoginScreen = ({ navigation }) => {
 
   // Connexion avec email/mot de passe
   const handleConnexionEmail = useCallback(async () => {
+    // Validation simple
     if (!email || !motDePasse) {
-      Alert.alert('Erreur', 'Veuillez remplir tous les champs');
+      setErreur({
+        message: 'Veuillez remplir tous les champs',
+        solution: 'Email et mot de passe sont obligatoires',
+        severity: 'error'
+      });
+      return;
+    }
+
+    if (!email.includes('@')) {
+      setErreur({
+        message: 'Format d\'email invalide',
+        solution: 'Veuillez entrer une adresse email valide',
+        severity: 'error'
+      });
+      return;
+    }
+
+    if (motDePasse.length < 6) {
+      setErreur({
+        message: 'Mot de passe trop court',
+        solution: 'Le mot de passe doit contenir au moins 6 caractères',
+        severity: 'error'
+      });
       return;
     }
 
     setChargement(true);
+    setErreur(null);
     
     // Timeout de sécurité pour éviter les blocages
     const timeoutId = setTimeout(() => {
       setChargement(false);
-      Alert.alert('Erreur', 'Délai d\'attente dépassé. Veuillez réessayer.');
+      setErreur({
+        message: 'Délai d\'attente dépassé',
+        solution: 'Veuillez réessayer ou vérifier votre connexion',
+        severity: 'warning'
+      });
     }, 30000); // 30 secondes
 
     try {
@@ -206,7 +243,16 @@ const LoginScreen = ({ navigation }) => {
       }
     } catch (error) {
       clearTimeout(timeoutId);
-      Alert.alert('Erreur de connexion', error.message);
+      
+      // Utiliser l'erreur enrichie si disponible, sinon utiliser le gestionnaire
+      if (error.errorInfo) {
+        setErreur(error.errorInfo);
+        console.error('Erreur de connexion:', error.errorInfo);
+      } else {
+        const errorInfo = handleFirebaseError(error, 'login');
+        setErreur(errorInfo);
+        console.error('Erreur de connexion:', errorInfo);
+      }
     } finally {
       setChargement(false);
     }
@@ -249,7 +295,11 @@ const LoginScreen = ({ navigation }) => {
   // Vérification du code SMS
   const handleVerificationSMS = useCallback(async () => {
     if (!codeSMS || !verificationId) {
-      Alert.alert('Erreur', 'Code SMS manquant');
+      setErreur({
+        message: 'Code SMS manquant',
+        solution: 'Veuillez entrer le code reçu par SMS',
+        severity: 'error'
+      });
       return;
     }
 
@@ -258,15 +308,22 @@ const LoginScreen = ({ navigation }) => {
       const resultat = await seConnecterTelephone(telephone, codeSMS, verificationId);
       if (resultat.success) {
         console.log('Connexion SMS réussie');
-        // L'utilisateur est maintenant connecté, le contexte d'authentification 
-        // devrait automatiquement naviguer vers l'écran principal
+        
+        // Redirection explicite pour la connexion téléphone
+        if (resultat.shouldRedirect) {
+          navigation.replace('MainTabs');
+        }
       }
     } catch (error) {
-      Alert.alert('Erreur de vérification', error.message);
+      setErreur({
+        message: error.message || 'Erreur de vérification SMS',
+        solution: 'Vérifiez le code et réessayez',
+        severity: 'error'
+      });
     } finally {
       setChargement(false);
     }
-  }, [codeSMS, verificationId, telephone]);
+  }, [codeSMS, verificationId, telephone, navigation]);
 
   // Connexion avec Google
   const handleConnexionGoogle = useCallback(async () => {
@@ -389,8 +446,7 @@ const LoginScreen = ({ navigation }) => {
             {modeConnexion === 'email' ? (
               // Mode Email
               <>
-                <TextInput
-                  style={styles.input}
+                <Input
                   placeholder="Adresse email"
                   value={email}
                   onChangeText={setEmail}
@@ -398,16 +454,17 @@ const LoginScreen = ({ navigation }) => {
                   autoCapitalize="none"
                   autoCorrect={false}
                   editable={!chargement}
+                  leftIcon={Icons.email}
                 />
                 
-                <TextInput
-                  style={styles.input}
+                <Input
                   placeholder="Mot de passe"
                   value={motDePasse}
                   onChangeText={setMotDePasse}
                   secureTextEntry
                   autoCapitalize="none"
                   editable={!chargement}
+                  leftIcon={Icons.lock}
                 />
 
                 <TouchableOpacity 
@@ -418,26 +475,36 @@ const LoginScreen = ({ navigation }) => {
                   <Text style={styles.forgotPasswordText}>Mot de passe oublié ?</Text>
                 </TouchableOpacity>
 
-                <Button
-                  title="Se connecter"
-                  onPress={handleConnexionEmail}
-                  variant="primary"
-                  size="lg"
-                  loading={chargement}
-                />
+                            <Button
+              title="Se connecter"
+              onPress={handleConnexionEmail}
+              variant="primary"
+              size="lg"
+              loading={chargement}
+            />
+
+            {/* Affichage des erreurs */}
+            {erreur && (
+              <ErrorDisplay
+                error={erreur}
+                onRetry={() => setErreur(null)}
+                onDismiss={() => setErreur(null)}
+                style={{ marginTop: 16 }}
+              />
+            )}
               </>
             ) : (
               // Mode Téléphone
               <>
                 {etapeSMS === 1 ? (
                   <>
-                    <TextInput
-                      style={styles.input}
+                    <Input
                       placeholder="Numéro de téléphone (+224...)"
                       value={telephone}
                       onChangeText={setTelephone}
                       keyboardType="phone-pad"
                       editable={!chargement}
+                      leftIcon={Icons.phone}
                     />
                     
                     <Button
@@ -450,14 +517,14 @@ const LoginScreen = ({ navigation }) => {
                   </>
                 ) : (
                   <>
-                    <TextInput
-                      style={styles.input}
+                    <Input
                       placeholder="Code de vérification (6 chiffres)"
                       value={codeSMS}
                       onChangeText={setCodeSMS}
                       keyboardType="number-pad"
                       maxLength={6}
                       editable={!chargement}
+                      leftIcon={Icons.message}
                     />
                     
                     <Button
@@ -492,7 +559,11 @@ const LoginScreen = ({ navigation }) => {
               onPress={handleConnexionGoogle}
               disabled={chargement}
             >
-              <Text style={{ color: '#DB4437', fontSize: 20 }}>🔴</Text>
+              <Icon 
+                {...Icons.google} 
+                size={20} 
+                color="#DB4437" 
+              />
               <Text style={[styles.socialButtonText, { color: '#DB4437' }]}>
                 Continuer avec Google
               </Text>
@@ -503,7 +574,11 @@ const LoginScreen = ({ navigation }) => {
               onPress={handleConnexionFacebook}
               disabled={chargement}
             >
-              <Text style={{ color: '#4267B2', fontSize: 20 }}>🔵</Text>
+              <Icon 
+                {...Icons.facebook} 
+                size={20} 
+                color="#4267B2" 
+              />
               <Text style={[styles.socialButtonText, { color: '#4267B2' }]}>
                 Continuer avec Facebook
               </Text>

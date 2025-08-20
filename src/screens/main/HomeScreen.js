@@ -11,11 +11,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { COLORS } from '../../constants/colors';
 
 // Import des composants UI
-import Header from '../../components/ui/Header';
-import QuickActions from '../../components/ui/QuickActions';
-import { StatsGrid } from '../../components/ui/StatsCard';
-import Card from '../../components/ui/Card';
-import Button from '../../components/ui/Button';
+import { Header, QuickActions, StatsGrid, Card, Button, Icon, Icons } from '../../components/ui';
 
 const HomeScreen = ({ navigation }) => {
   const { utilisateur, profilUtilisateur, seDeconnecter } = useAuth();
@@ -273,7 +269,10 @@ const HomeScreen = ({ navigation }) => {
         {/* Section promotionnelle */}
         <View style={styles.promoSection}>
           <Card style={styles.promoCard}>
-            <Text style={styles.promoTitle}>🚀 Découvrez nos nouveautés</Text>
+            <View style={styles.promoHeader}>
+              <Icon {...Icons.info} size={24} color={COLORS.primary[500]} />
+              <Text style={styles.promoTitle}>Découvrez nos nouveautés</Text>
+            </View>
             <Text style={styles.promoText}>
               Nouvelles fonctionnalités de géolocalisation et de réalité augmentée pour vos visites virtuelles !
             </Text>
@@ -322,11 +321,16 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: `${COLORS.secondary}20`
   },
+  promoHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8
+  },
   promoTitle: {
     fontSize: 18,
     fontWeight: 'bold',
     color: COLORS.text.primary,
-    marginBottom: 8
+    marginLeft: 8
   },
   promoText: {
     fontSize: 14,

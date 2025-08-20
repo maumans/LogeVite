@@ -15,7 +15,7 @@ import {
   StatusBar
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Card } from '../../components/ui';
+import { Card, Icon, Icons } from '../../components/ui';
 import { COLORS } from '../../constants/colors';
 import { LinearGradient } from 'expo-linear-gradient';
 
@@ -37,7 +37,7 @@ const DiscoveryScreen = ({ navigation }) => {
       id: 1,
       title: 'Recherche Intelligente',
       description: 'Trouvez votre logement idéal avec nos filtres avancés et notre système de recommandation intelligent.',
-      icon: '🔍',
+      icon: Icons.search,
       color: COLORS.primary[500],
       gradient: [COLORS.primary[400], COLORS.primary[600]],
       examples: ['Appartements', 'Maisons', 'Terrains', 'Bureaux']
@@ -46,7 +46,7 @@ const DiscoveryScreen = ({ navigation }) => {
       id: 2,
       title: 'Professionnels Vérifiés',
       description: 'Connectez-vous avec des agents immobiliers certifiés et des promoteurs de confiance.',
-      icon: '✅',
+      icon: Icons.checkCircle,
       color: COLORS.secondary[500],
       gradient: [COLORS.secondary[400], COLORS.secondary[600]],
       examples: ['Agents certifiés', 'Promoteurs vérifiés', 'Consultants experts']
@@ -55,7 +55,7 @@ const DiscoveryScreen = ({ navigation }) => {
       id: 3,
       title: 'Géolocalisation Précise',
       description: 'Localisez les biens sur une carte interactive et découvrez les quartiers qui vous conviennent.',
-      icon: '📍',
+      icon: Icons.location,
       color: COLORS.accent[500],
       gradient: [COLORS.accent[400], COLORS.accent[600]],
       examples: ['Cartes interactives', 'Quartiers détaillés', 'Transports à proximité']
@@ -64,7 +64,7 @@ const DiscoveryScreen = ({ navigation }) => {
       id: 4,
       title: 'Messagerie Intégrée',
       description: 'Communiquez directement avec les vendeurs et agents via notre messagerie sécurisée.',
-      icon: '💬',
+      icon: Icons.message,
       color: COLORS.success[500],
       gradient: [COLORS.success[400], COLORS.success[600]],
       examples: ['Chat en temps réel', 'Notifications push', 'Historique des conversations']
@@ -73,7 +73,7 @@ const DiscoveryScreen = ({ navigation }) => {
       id: 5,
       title: 'Gestion de Favoris',
       description: 'Sauvegardez vos biens préférés et créez des alertes personnalisées.',
-      icon: '❤️',
+      icon: Icons.favorite,
       color: COLORS.error[500],
       gradient: [COLORS.error[400], COLORS.error[600]],
       examples: ['Liste de favoris', 'Alertes personnalisées', 'Comparaison de biens']
@@ -82,12 +82,12 @@ const DiscoveryScreen = ({ navigation }) => {
 
   // Types de biens populaires
   const popularProperties = [
-    { type: 'Appartement', count: '2,450+', icon: '🏢', color: COLORS.primary[500] },
-    { type: 'Maison', count: '1,890+', icon: '🏠', color: COLORS.secondary[500] },
-    { type: 'Terrain', count: '890+', icon: '🌱', color: COLORS.success[500] },
-    { type: 'Bureau', count: '450+', icon: '🏢', color: COLORS.accent[500] },
-    { type: 'Commerce', count: '320+', icon: '🏪', color: COLORS.warning[500] },
-    { type: 'Villa', count: '180+', icon: '🏰', color: COLORS.error[500] }
+    { type: 'Appartement', count: '2,450+', icon: Icons.apartment, color: COLORS.primary[500] },
+    { type: 'Maison', count: '1,890+', icon: Icons.house, color: COLORS.secondary[500] },
+    { type: 'Terrain', count: '890+', icon: Icons.location, color: COLORS.success[500] },
+    { type: 'Bureau', count: '450+', icon: Icons.apartment, color: COLORS.accent[500] },
+    { type: 'Commerce', count: '320+', icon: Icons.apartment, color: COLORS.warning[500] },
+    { type: 'Villa', count: '180+', icon: Icons.house, color: COLORS.error[500] }
   ];
 
   // Villes populaires
@@ -100,10 +100,10 @@ const DiscoveryScreen = ({ navigation }) => {
 
   // Statistiques de l'application
   const stats = [
-    { label: 'Biens disponibles', value: '5,890+', color: COLORS.primary[500], icon: '🏠' },
-    { label: 'Professionnels', value: '450+', color: COLORS.secondary[500], icon: '👨‍💼' },
-    { label: 'Utilisateurs', value: '12,500+', color: COLORS.accent[500], icon: '👥' },
-    { label: 'Transactions', value: '2,100+', color: COLORS.success[500], icon: '💰' }
+    { label: 'Biens disponibles', value: '5,890+', color: COLORS.primary[500], icon: Icons.house },
+    { label: 'Professionnels', value: '450+', color: COLORS.secondary[500], icon: Icons.person },
+    { label: 'Utilisateurs', value: '12,500+', color: COLORS.accent[500], icon: Icons.account },
+    { label: 'Transactions', value: '2,100+', color: COLORS.success[500], icon: Icons.checkCircle }
   ];
 
   // Animations d'entrée
@@ -262,7 +262,7 @@ const DiscoveryScreen = ({ navigation }) => {
                     ]}
                   >
                     <View style={[styles.statIcon, { backgroundColor: stat.color + '20' }]}>
-                      <Text style={styles.statIconText}>{stat.icon}</Text>
+                      <Icon {...stat.icon} size={24} color={stat.color} />
                     </View>
                     <Text style={styles.statValue}>{stat.value}</Text>
                     <Text style={styles.statLabel}>{stat.label}</Text>
@@ -308,7 +308,9 @@ const DiscoveryScreen = ({ navigation }) => {
                     colors={features[currentFeature]?.gradient || [COLORS.primary[400], COLORS.primary[600]]}
                     style={styles.featureIconGradient}
                   >
-                    <Text style={styles.featureIconText}>{features[currentFeature]?.icon}</Text>
+                    {features[currentFeature]?.icon && (
+                      <Icon {...features[currentFeature].icon} size={40} color="white" />
+                    )}
                   </LinearGradient>
                 </Animated.View>
                 
@@ -391,7 +393,9 @@ const DiscoveryScreen = ({ navigation }) => {
                     colors={[property.color + '10', property.color + '20']}
                     style={styles.propertyCardGradient}
                   >
-                    <Text style={styles.propertyIcon}>{property.icon}</Text>
+                    <View style={styles.propertyIconContainer}>
+                      <Icon {...property.icon} size={32} color={property.color} />
+                    </View>
                     <Text style={styles.propertyType}>{property.type}</Text>
                     <Text style={[styles.propertyCount, { color: property.color }]}>{property.count}</Text>
                   </LinearGradient>
@@ -736,9 +740,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.grey[200]
   },
-  propertyIcon: {
-    fontSize: 36,
-    marginBottom: 12
+  propertyIconContainer: {
+    marginBottom: 12,
+    alignItems: 'center'
   },
   propertyType: {
     fontSize: 14,

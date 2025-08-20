@@ -12,7 +12,6 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '../config/firebase';
 import { 
-  recupererUtilisateur, 
   seDeconnecter, 
   sinscrireEmail, 
   seConnecterEmail,
@@ -24,6 +23,7 @@ import {
   mettreAJourProfil,
   recupererProfil
 } from '../services/authService';
+import { recupererUtilisateur } from '../services/firestoreService';
 
 // Création du contexte
 const AuthContext = createContext();
